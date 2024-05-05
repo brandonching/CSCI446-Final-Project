@@ -4,15 +4,14 @@ import "bulma/css/bulma.css";
 
 function Navbar() {
   return (
-    <nav
-      className="navbar is-dark"
-      role="navigation"
-      aria-label="main navigation"
-    >
+    <nav className="navbar" role="navigation" aria-label="main navigation">
       <div className="container">
         <div className="navbar-brand">
           <Link to="/events" className="navbar-item">
-            Graduation Events
+            <img
+              src="https://www.mines.edu/wp-content/uploads/assets/mines-logo-150-years.png"
+              alt="Mines Graduation Events"
+            />
           </Link>
         </div>
 
