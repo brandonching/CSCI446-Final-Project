@@ -6,15 +6,21 @@ InviteRouter.mergeParams = true;
 
 InviteRouter.get("/", async (req, res) => {
   const db = req.app.get("db");
-  const invites = await db.collection("invites").find().toArray();
+  const { eventId } = req.params;
+  const invites = await db
+    .collection("invites")
+    .find({ event_id: new ObjectId(eventId) })
+    .toArray();
 
   return res.json(invites);
 });
 
 InviteRouter.get("/:inviteId", async (req, res) => {
   const db = req.app.get("db");
+  const { eventId } = req.params;
   const invite = await db.collection("invites").findOne({
-    _id: ObjectId(req.params.inviteId),
+    event_id: new ObjectId(eventId),
+    _id: new ObjectId(req.params.inviteId),
   });
 
   return res.json(invite);
@@ -22,16 +28,31 @@ InviteRouter.get("/:inviteId", async (req, res) => {
 
 InviteRouter.post("/", async (req, res) => {
   const db = req.app.get("db");
-  const result = await db.collection("invites").insertOne(req.body);
+  const { eventId } = req.params;
 
-  return res.json(result.ops[0]);
+  try {
+    const result = await db.collection("invites").insertOne({
+      ...req.body,
+      event_id: new ObjectId(eventId),
+    });
+    console.info(result);
+    res.status(201).json(result.insertedId);
+  } catch (e) {
+    console.error(e);
+    return res.status(500).end();
+  }
 });
 
 InviteRouter.put("/:inviteId", async (req, res) => {
   const db = req.app.get("db");
-  const result = await db
-    .collection("invites")
-    .updateOne({ _id: ObjectId(req.params.inviteId) }, { $set: req.body });
+  const { eventId, inviteId } = req.params;
+  const result = await db.collection("invites").updateOne(
+    {
+      event_id: new ObjectId(eventId),
+      _id: new ObjectId(inviteId),
+    },
+    { $set: req.body }
+  );
 
   return res.json(result);
 });
@@ -40,7 +61,7 @@ InviteRouter.delete("/:inviteId", async (req, res) => {
   const db = req.app.get("db");
   const result = await db
     .collection("invites")
-    .deleteOne({ _id: ObjectId(req.params.inviteId) });
+    .deleteOne({ _id: new ObjectId(req.params.inviteId) });
 
   return res.json(result);
 });
