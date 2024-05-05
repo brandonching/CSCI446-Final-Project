@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import EventsRouter from "./events.js";
-import InviteRouter from "./invite.js";
+import EventsRouter from "./routes/eventRouter.js";
+import InviteRouter from "./routes/inviteRouter.js";
 import { MongoClient } from "mongodb";
 
 async function connect() {
@@ -13,8 +13,8 @@ async function connect() {
 const port = 3001;
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
 app.use("/events", EventsRouter);
 app.use("/invites", InviteRouter);
@@ -24,4 +24,10 @@ app.set("db", database);
 
 app.listen(port, () => {
   console.info(`Server is running at http://localhost:${port}`);
+  // Check if the database is connected
+  if (database) {
+    console.info("Database connected");
+  } else {
+    console.error("Database connection failed");
+  }
 });
