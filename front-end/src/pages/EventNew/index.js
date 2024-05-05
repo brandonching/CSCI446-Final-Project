@@ -3,13 +3,26 @@ import React, { useState } from "react";
 const CreateEventPage = () => {
   const [eventName, setEventName] = useState("");
   const [description, setDescription] = useState("");
+  const [eventDate, setEventDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [imageURL, setImageURL] = useState("");
 
+  const formatTime = (time) => {
+    const date = new Date(`2000-01-01T${time}`);
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
+      const formattedStartTime = formatTime(startTime);
+      const formattedEndTime = formatTime(endTime);
+
       const response = await fetch("http://localhost:3001/events", {
         method: "POST",
         headers: {
@@ -18,10 +31,11 @@ const CreateEventPage = () => {
         body: JSON.stringify({
           name: eventName,
           description,
-          start_date: startTime,
-          end_date: endTime,
+          date: eventDate,
+          start_time: formattedStartTime,
+          end_time: formattedEndTime,
           location: "City Park", // Assuming location is always City Park based on the example
-          image: imageURL, // Add the imageURL to the body
+          image_url: imageURL, // Add the imageURL to the body
         }),
       });
       if (!response.ok) {
@@ -30,6 +44,7 @@ const CreateEventPage = () => {
       // Reset form fields after successful submission
       setEventName("");
       setDescription("");
+      setEventDate("");
       setStartTime("");
       setEndTime("");
       setImageURL("");
@@ -61,7 +76,7 @@ const CreateEventPage = () => {
           </div>
         </div>
         <div className="field">
-          <label className="label">Description</label>
+          <label className="label">Event Description</label>
           <div className="control">
             <textarea
               className="textarea"
@@ -73,11 +88,23 @@ const CreateEventPage = () => {
           </div>
         </div>
         <div className="field">
-          <label className="label">Start Time/Date</label>
+          <label className="label">Event Date</label>
           <div className="control">
             <input
               className="input"
-              type="datetime-local"
+              type="date"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label className="label">Start Time</label>
+          <div className="control">
+            <input
+              className="input"
+              type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               required
@@ -85,11 +112,11 @@ const CreateEventPage = () => {
           </div>
         </div>
         <div className="field">
-          <label className="label">End Time/Date</label>
+          <label className="label">End Time</label>
           <div className="control">
             <input
               className="input"
-              type="datetime-local"
+              type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               required

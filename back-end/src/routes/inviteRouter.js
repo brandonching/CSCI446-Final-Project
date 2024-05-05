@@ -11,7 +11,6 @@ InviteRouter.get("/", async (req, res) => {
     .collection("invites")
     .find({ event_id: new ObjectId(eventId) })
     .toArray();
-
   return res.json(invites);
 });
 

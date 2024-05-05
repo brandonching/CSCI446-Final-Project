@@ -30,7 +30,9 @@ const EventPage = () => {
                 image={event.image_url}
                 name={event.name}
                 description={event.description}
-                date={event.date}
+                date={event.date.split("T")[0]} // Extract only the date part
+                start_time={event.start_time}
+                end_time={event.end_time}
                 location={event.location}
                 numOfPeople={event.numOfPeople}
               />

@@ -4,7 +4,7 @@ import InviteRouter from "./inviteRouter.js";
 
 const EventsRouter = Router();
 
-EventsRouter.use("/:eventId/invite", InviteRouter);
+EventsRouter.use("/:eventId/invites", InviteRouter);
 
 EventsRouter.get("/", async (req, res) => {
   const db = req.app.get("db");

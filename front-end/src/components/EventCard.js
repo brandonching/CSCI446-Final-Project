@@ -5,9 +5,14 @@ const EventCard = ({
   name,
   description,
   date,
+  start_time,
+  end_time,
   location,
   numOfPeople,
 }) => {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  const formattedDate = new Date(date).toLocaleDateString(undefined, options);
+
   return (
     <div className="card">
       <div className="card-image">
@@ -21,13 +26,11 @@ const EventCard = ({
             <p className="title is-4">{name}</p>
             <p className="subtitle is-6">{description.slice(0, 50)}...</p>
             <p>
-              <strong>Date:</strong> {date}
+              <strong>Date:</strong> {formattedDate} {" @ "} {start_time} -{" "}
+              {end_time}
             </p>
             <p>
               <strong>Location:</strong> {location}
-            </p>
-            <p>
-              <strong>Invited:</strong> {numOfPeople} people
             </p>
           </div>
         </div>
