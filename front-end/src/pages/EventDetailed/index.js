@@ -46,7 +46,7 @@ function EventDetailPage() {
       <h1 className="title is-2">{event.name}</h1>
       <div className="columns">
         <div className="column">
-          <img src={event.image} alt={event.name} />
+          <img src={event.image_url} alt={event.name} />
         </div>
         <div className="column">
           <p>

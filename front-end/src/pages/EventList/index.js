@@ -27,7 +27,7 @@ const EventPage = () => {
             {/* Wrap each EventCard in a Link component */}
             <Link to={`/events/${event._id}`}>
               <EventCard
-                image={event.image}
+                image={event.image_url}
                 name={event.name}
                 description={event.description}
                 date={event.date}
