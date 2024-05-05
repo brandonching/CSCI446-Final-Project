@@ -111,41 +111,7 @@ function EventDetailPage() {
   return (
     <div className="container">
       <h1 className="title is-2">{event.name}</h1>
-      <div className="columns">
-        <div className="column">
-          <img src={event.image_url} alt={event.name} />
-        </div>
-        <div className="column">
-          <p>
-            <strong>Description:</strong> {event.description}
-          </p>
-          <p>
-            <strong>Date:</strong>{" "}
-            {new Date(event.date).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            {" @ "}
-            {event.start_time} - {event.end_time}
-          </p>
-          <p>
-            <strong>Location:</strong> {event.location}
-          </p>
-          <p>
-            <strong>Number of People Invited:</strong> {invitedPeople.length}
-          </p>
-          <Link
-            to={`/events/${eventId}/invite/new`}
-            className="button is-primary"
-          >
-            Add New Invite
-          </Link>
-        </div>
-      </div>
-      <a href={`/events/${eventId}/invites`}>
-        <h2 className="title is-3">Invited People</h2>
-      </a>
+      <h2 className="title is-3">Invited People</h2>
 
       <table className="table">
         <thead>
