@@ -61,6 +61,21 @@ function EventDetailPage() {
     }
   };
 
+  const deleteEvent = async () => {
+    // Give the user a confirmation prompt before deleting the event
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        await fetch(`http://localhost:3001/events/${eventId}`, {
+          method: "DELETE",
+        });
+        // After successful deletion, redirect the user to the event list page
+        window.location.href = "/events";
+      } catch (error) {
+        console.error("Error deleting event:", error);
+      }
+    }
+  };
+
   const sortBy = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -141,6 +156,9 @@ function EventDetailPage() {
           >
             Add New Invite
           </Link>
+          <button className="button is-primary" onClick={deleteEvent}>
+            Delete Event
+          </button>
         </div>
       </div>
       <a href={`/events/${eventId}/invites`}>
@@ -166,6 +184,7 @@ function EventDetailPage() {
               RSVP {renderSortIndicator("rsvp")}
             </th>
             <th>Action</th>
+            <th>Details</th>
           </tr>
         </thead>
         <tbody>
@@ -182,6 +201,11 @@ function EventDetailPage() {
               </td>
               <td>
                 <button onClick={() => deleteInvite(person._id)}>Delete</button>
+              </td>
+              <td>
+                <Link to={`/events/${eventId}/invites/${person._id}`}>
+                  View
+                </Link>
               </td>
             </tr>
           ))}

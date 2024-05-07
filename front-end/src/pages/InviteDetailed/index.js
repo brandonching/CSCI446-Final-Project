@@ -1,131 +1,158 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { FaCheck, FaTimes } from "react-icons/fa"; // Import icons from Font Awesome
 
-function EventDetailPage() {
-  const { eventId } = useParams();
+function InvitationDetailPage() {
+  const { eventId, inviteId } = useParams();
   const [event, setEvent] = useState(null);
-  const [invitedPeople, setInvitedPeople] = useState([]);
-  const [sortConfig, setSortConfig] = useState({
-    key: "last_name",
-    direction: "asc",
-  });
-  const [selectedInvite, setSelectedInvite] = useState(null);  // Moved inside the component
+  const [invitation, setInvitation] = useState(null);
+  const [rsvpStatus, setRsvpStatus] = useState(undefined); // Set default to undefined
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchEvent = async () => {
       try {
-        const eventResponse = await fetch(`http://localhost:3001/events/${eventId}`);
-        const event = await eventResponse.json();
-        setEvent(event);
-
-        const invitesResponse = await fetch(`http://localhost:3001/events/${eventId}/invites`);
-        const invites = await invitesResponse.json();
-        setInvitedPeople(invites);
+        const response = await fetch(`http://localhost:3001/events/${eventId}`);
+        const data = await response.json();
+        setEvent(data);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching event:", error);
       }
-    }
+    };
 
-    fetchData();
+    fetchEvent();
   }, [eventId]);
 
-  const fetchInviteDetails = async (inviteId) => {
-    try {
-      const response = await fetch(`http://localhost:3001/events/${eventId}/invites/${inviteId}`);
-      const invite = await response.json();
-      setSelectedInvite(invite);
-    } catch (error) {
-      console.error("Error fetching invite details:", error);
-    }
-  };
-  const renderInviteDetails = () => {
-    if (!selectedInvite) return null; 
-  
-    return (
-      <div style={{ background: '#f4f4f4', padding: '20px', margin: '20px 0', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h4>{selectedInvite.first_name} {selectedInvite.last_name}'s invite to {event.name}</h4>
-        <br></br>
-        <p>Info:</p>
-
-        <p>Email: {selectedInvite.email}</p>
-        <p>Phone: {selectedInvite.phone}</p>
-        <p>RSVP Status: {selectedInvite.rsvp ? 'Accepted' : (selectedInvite.rsvp === false ? 'Declined' : 'Pending')}</p>
-
-        <p>Show this ticket at your event and have fun :) </p>
-        <button onClick={() => setSelectedInvite(null)} style={{ marginTop: '10px' }}>Close Details</button>
-      </div>
-    );
-  };
-  const deleteInvite = async (inviteId) => {
-    if (window.confirm("Are you sure you want to delete this invite?")) {
+  useEffect(() => {
+    const fetchInvitation = async () => {
       try {
-        await fetch(`http://localhost:3001/events/${eventId}/invites/${inviteId}`, { method: "DELETE" });
-        setInvitedPeople(prev => prev.filter(person => person._id !== inviteId));
+        const response = await fetch(
+          `http://localhost:3001/events/${eventId}/invites/${inviteId}`
+        );
+        const data = await response.json();
+        setInvitation(data);
+        setRsvpStatus(data.rsvp);
       } catch (error) {
-        console.error("Error deleting invite:", error);
+        console.error("Error fetching invitation:", error);
       }
+    };
+
+    fetchInvitation();
+  }, [eventId, inviteId]);
+
+  const handleRsvpChange = (newRsvpStatus) => {
+    setRsvpStatus(newRsvpStatus);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(
+        `http://localhost:3001/events/${eventId}/invites/${inviteId}`,
+        {
+          method: "PUT", // Use PUT method for updating
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ rsvp: rsvpStatus }), // Send the updated RSVP status
+        }
+      );
+      if (response.ok) {
+        console.log("RSVP status updated successfully");
+      } else {
+        console.error("Failed to update RSVP status");
+      }
+    } catch (error) {
+      console.error("Error updating RSVP status:", error);
     }
   };
 
-  const sortBy = key => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc"
-    }));
-  };
-
-  const sortedInvitedPeople = invitedPeople.sort((a, b) => {
-    if (sortConfig.key === "rsvp") {
-      const order = { null: 0, false: 1, true: 2 };
-      return (order[a.rsvp] - order[b.rsvp]) * (sortConfig.direction === "asc" ? 1 : -1);
-    }
-    return a[sortConfig.key].localeCompare(b[sortConfig.key]) * (sortConfig.direction === "asc" ? 1 : -1);
-  });
-
-  const renderSortIndicator = key => sortConfig.key === key ? (sortConfig.direction === "asc" ? "▲" : "▼") : null;
-
-  if (!event) {
+  if (!invitation) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className="container">
-      <h1 className="title is-2">{event.name}</h1>
-      <h2 className="title is-3">Invited People</h2>
-      <table className="table">
-        <thead>
-          <tr>
-            <th onClick={() => sortBy("first_name")}>First Name {renderSortIndicator("first_name")}</th>
-            <th onClick={() => sortBy("last_name")}>Last Name {renderSortIndicator("last_name")}</th>
-            <th onClick={() => sortBy("email")}>Email {renderSortIndicator("email")}</th>
-            <th onClick={() => sortBy("phone")}>Phone Number {renderSortIndicator("phone")}</th>
-            <th onClick={() => sortBy("rsvp")}>RSVP {renderSortIndicator("rsvp")}</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-        {sortedInvitedPeople.map((person) => (
-          <tr key={person._id}>
-            <td onClick={() => fetchInviteDetails(person._id)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
-              {person.first_name}
-            </td>
-            <td>{person.last_name}</td>
-            <td>{person.email}</td>
-            <td>{person.phone}</td>
-            <td>
-              {person.rsvp === null ? "❔" : 
-              person.rsvp ? <FaCheck style={{ color: "green" }} /> : <FaTimes style={{ color: "red" }} />}
-            </td>
-            <td>
-              <button onClick={() => deleteInvite(person._id)}>Delete</button>
-            </td>
-          </tr>
-        ))}
-        </tbody>
-      </table>
-      {renderInviteDetails()}
+      <h1 className="title is-2">You're Invited!</h1>
+      <div className="box">
+        <p>
+          <strong>Event Name:</strong> {event.name}
+        </p>
+        <p>
+          <strong>Event Date:</strong> {new Date(event.date).toLocaleString()}
+        </p>
+
+        <p>
+          <strong>Event Location:</strong> {event.location}
+        </p>
+
+        <p>
+          <strong>Event Description:</strong> {event.description}
+        </p>
+      </div>
+      <div className="box" style={{ textAlign: "center" }}>
+        <h2 className="title is-4">Ticket</h2>
+        <p> Show this at the door for entry</p>
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Rickrolling_QR_code.png?20200615212723"
+          alt="ticket"
+        />
+        <p>{invitation._id}</p>
+      </div>
+      <div className="box">
+        <p>
+          <strong>First Name:</strong> {invitation.first_name}
+        </p>
+        <p>
+          <strong>Last Name:</strong> {invitation.last_name}
+        </p>
+        <p>
+          <strong>Email:</strong> {invitation.email}
+        </p>
+        <p>
+          <strong>Phone Number:</strong> {invitation.phone}
+        </p>
+        <p>
+          <strong>RSVP Status:</strong>{" "}
+          {rsvpStatus === null
+            ? "No response"
+            : rsvpStatus
+            ? "Attending"
+            : "Not attending"}
+        </p>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="box">
+          <h2 className="title is-4">Update RSVP Status</h2>
+          <div className="control">
+            <label className="radio">
+              <input
+                type="radio"
+                value={true}
+                checked={rsvpStatus === true}
+                onChange={() => handleRsvpChange(true)}
+              />
+              <span>Accept</span>
+            </label>
+            <label className="radio">
+              <input
+                type="radio"
+                value={false}
+                checked={rsvpStatus === false}
+                onChange={() => handleRsvpChange(false)}
+              />
+              <span>Decline</span>
+            </label>
+          </div>
+          <div className="field">
+            <div className="control">
+              <button type="submit" className="button is-primary">
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }
-export default EventDetailPage;
+
+export default InvitationDetailPage;
